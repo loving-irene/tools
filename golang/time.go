@@ -116,7 +116,6 @@ print your command:
 
 	}
 
-	fmt.Printf("%+v\n", obj)
 	fmt.Println(obj.output)
 }
 
