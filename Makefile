@@ -1,2 +1,2 @@
 all:
-	go build time.go
+	go build ./golang/time.go
