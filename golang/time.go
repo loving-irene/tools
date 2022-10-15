@@ -9,6 +9,9 @@ const (
 	TIME_DIE   uint8 = 0
 	TIME_RUN   uint8 = 1
 	TIME_PAUSE uint8 = 2
+
+	LOOP_RUN   uint8 = 1 // 循环继续
+	LOOP_BREAK uint8 = 2 // 跳出循环
 )
 
 type model struct {
@@ -34,7 +37,7 @@ print your command:
 
 	var command string
 	var obj model
-	flag := 1
+	flag := LOOP_RUN
 
 	for true {
 		fmt.Scan(&command)
@@ -81,14 +84,17 @@ print your command:
 			}
 			break
 		case "e":
-			if obj.flag == TIME_DIE {
+			switch obj.flag {
+			case TIME_DIE:
 				fmt.Println("计时器未启动，请先启动")
+				break
+			case TIME_PAUSE:
+				obj.now = time.Now().Unix()
 				break
 			}
 			fmt.Println("结束计时")
 			obj.flag = TIME_DIE
-			obj.now = time.Now().Unix()
-			flag = 2
+			flag = LOOP_BREAK
 			obj = cal(obj)
 			break
 		case "p":
@@ -110,7 +116,7 @@ print your command:
 			fmt.Println("no command")
 		}
 
-		if flag == 2 {
+		if flag == LOOP_BREAK {
 			break
 		}
 
@@ -124,6 +130,17 @@ func cal(obj model) model {
 	obj.hour += duration / 3600
 	obj.min += (duration % 3600) / 60
 	obj.sec += (duration % 3600) % 60
+
+	if obj.sec >= 60 {
+		obj.min += obj.sec / 60
+		obj.sec = obj.sec % 60
+	}
+
+	if obj.min >= 60 {
+		obj.hour += obj.min / 60
+		obj.min = obj.min % 60
+	}
+
 	obj.output = fmt.Sprintf("持续时间 %d 小时 %d 分钟 %d 秒", obj.hour, obj.min, obj.sec)
 	obj.start = time.Now().Unix()
 	obj.now = time.Now().Unix()
