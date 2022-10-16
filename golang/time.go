@@ -88,6 +88,9 @@ print your command:
 			case TIME_DIE:
 				fmt.Println("计时器未启动，请先启动")
 				break
+			case TIME_RUN:
+				obj.now = time.Now().Unix()
+				break
 			case TIME_PAUSE:
 				obj.now = time.Now().Unix()
 				break
