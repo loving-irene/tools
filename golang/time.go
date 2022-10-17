@@ -9,9 +9,6 @@ const (
 	TIME_DIE   uint8 = 0
 	TIME_RUN   uint8 = 1
 	TIME_PAUSE uint8 = 2
-
-	LOOP_RUN   uint8 = 1 // 循环继续
-	LOOP_BREAK uint8 = 2 // 跳出循环
 )
 
 type model struct {
@@ -37,7 +34,6 @@ print your command:
 
 	var command string
 	var obj model
-	flag := LOOP_RUN
 
 	for true {
 		fmt.Scan(&command)
@@ -85,8 +81,8 @@ print your command:
 			fmt.Println("结束计时")
 			obj.now = time.Now().Unix()
 			obj.flag = TIME_DIE
-			flag = LOOP_BREAK
 			obj = cal(obj)
+			goto END
 		case "p":
 			switch obj.flag {
 			case TIME_DIE:
@@ -103,12 +99,8 @@ print your command:
 			fmt.Println("no command")
 		}
 
-		if flag == LOOP_BREAK {
-			break
-		}
-
 	}
-
+END:
 	fmt.Println(obj.output)
 }
 
