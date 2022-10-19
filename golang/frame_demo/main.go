@@ -1,36 +1,37 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"net"
+	"math/rand"
 )
 
-func main() {
-
-	ln, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		panic(err)
+func test(ch chan<- int) {
+	for i := 0; i < 100; i++ {
+		ch <- i
 	}
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			panic(err)
-		}
-		go handleConnection(conn)
-	}
-	fmt.Println("test")
+	close(ch)
 }
 
-func handleConnection(conn net.Conn) {
-	br := bufio.NewReader(conn)
-	for {
-		data, err := br.ReadString('\n')
-		if err == io.EOF {
-			break
-		}
-		fmt.Printf("%s", data)
-		fmt.Fprintf(conn, "OK\n")
+func main() {
+	chs := [3]chan int{
+		make(chan int, 1),
+		make(chan int, 1),
+		make(chan int, 1),
+	}
+
+	index := rand.Intn(3) // 随机生成0-2之间的数字
+	fmt.Printf("随机索引/数值: %d\n", index)
+	chs[index] <- index // 向通道发送随机数字
+
+	// 哪一个通道中有值，哪个对应的分支就会被执行
+	select {
+	case <-chs[0]:
+		fmt.Println("第一个条件分支被选中")
+	case <-chs[1]:
+		fmt.Println("第二个条件分支被选中")
+	case num := <-chs[2]:
+		fmt.Println("第三个条件分支被选中:", num)
+	default:
+		fmt.Println("没有分支被选中")
 	}
 }
