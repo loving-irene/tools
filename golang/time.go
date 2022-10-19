@@ -77,9 +77,10 @@ print your command:
 			switch obj.flag {
 			case TIME_DIE:
 				fmt.Println("计时器未启动，请先启动")
+			case TIME_RUN:
+				obj.now = time.Now().Unix()
 			}
 			fmt.Println("结束计时")
-			obj.now = time.Now().Unix()
 			obj.flag = TIME_DIE
 			obj = cal(obj)
 			goto END
