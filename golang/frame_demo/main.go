@@ -1,37 +1,45 @@
 package main
 
 import (
-	"fmt"
-	"math/rand"
+	"frame_demo/worker"
+	"log"
+	"sync"
+	"time"
 )
 
-func test(ch chan<- int) {
-	for i := 0; i < 100; i++ {
-		ch <- i
-	}
-	close(ch)
+var langs = []string{
+	"Golang",
+	"PHP",
+	"JavaScript",
+	"Python",
+	"Java",
+}
+
+type langPrinter struct {
+	lang string
+}
+
+func (m *langPrinter) Task() {
+	log.Println(m.lang)
+	time.Sleep(time.Second)
 }
 
 func main() {
-	chs := [3]chan int{
-		make(chan int, 1),
-		make(chan int, 1),
-		make(chan int, 1),
+	p := worker.New(2)
+
+	var wg sync.WaitGroup
+	wg.Add(5 * len(langs))
+
+	for i := 0; i < 5; i++ {
+		for _, lang := range langs {
+			lp := langPrinter{lang}
+			go func() {
+				p.Run(&lp)
+				wg.Done()
+			}()
+		}
 	}
 
-	index := rand.Intn(3) // 随机生成0-2之间的数字
-	fmt.Printf("随机索引/数值: %d\n", index)
-	chs[index] <- index // 向通道发送随机数字
-
-	// 哪一个通道中有值，哪个对应的分支就会被执行
-	select {
-	case <-chs[0]:
-		fmt.Println("第一个条件分支被选中")
-	case <-chs[1]:
-		fmt.Println("第二个条件分支被选中")
-	case num := <-chs[2]:
-		fmt.Println("第三个条件分支被选中:", num)
-	default:
-		fmt.Println("没有分支被选中")
-	}
+	wg.Wait()
+	p.Shutdown()
 }
