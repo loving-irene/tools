@@ -1,9 +1,10 @@
 package main
 
 import (
-	"frame_demo/worker"
+	"encoding/json"
+	"fmt"
 	"log"
-	"sync"
+	"reflect"
 	"time"
 )
 
@@ -24,22 +25,38 @@ func (m *langPrinter) Task() {
 	time.Sleep(time.Second)
 }
 
+type User struct {
+	Name    string
+	Website string
+	Age     int
+	Male    bool
+	Skills  []string
+}
+
 func main() {
-	p := worker.New(2)
-
-	var wg sync.WaitGroup
-	wg.Add(5 * len(langs))
-
-	for i := 0; i < 5; i++ {
-		for _, lang := range langs {
-			lp := langPrinter{lang}
-			go func() {
-				p.Run(&lp)
-				wg.Done()
-			}()
-		}
+	user := User{
+		"lovan",
+		"lovan.com",
+		29,
+		true,
+		[]string{"python", "php"},
 	}
 
-	wg.Wait()
-	p.Shutdown()
+	e, err := json.Marshal(user)
+	if err != nil {
+		log.Println("msg:", err)
+		return
+	}
+	fmt.Println("解码数据:", e)
+	fmt.Printf("解码数据:%s\n", e)
+
+	var a User
+	err = json.Unmarshal(e, &a)
+	if err != nil {
+		log.Println("msg:", err)
+		return
+	}
+	fmt.Println(a)
+	fmt.Println(reflect.TypeOf(a))
+
 }

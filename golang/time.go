@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -22,6 +24,8 @@ type model struct {
 }
 
 func main() {
+	var duration int64 = 3600
+
 	usage := `command comments:
 s 			# check status now
 g			# time start
@@ -34,6 +38,7 @@ print your command:
 
 	var command string
 	var obj model
+	var start int64
 
 	for true {
 		fmt.Scan(&command)
@@ -68,6 +73,7 @@ print your command:
 				fmt.Println("恢复计时")
 			case TIME_DIE:
 				fmt.Println("计时开始")
+				start = time.Now().Unix()
 				obj.flag = TIME_RUN
 				obj.start = time.Now().Unix()
 				obj.now = time.Now().Unix()
@@ -99,7 +105,8 @@ print your command:
 		default:
 			fmt.Println("no command")
 		}
-
+		//定时任务
+		timer(&obj, &start, duration)
 	}
 END:
 	fmt.Println(obj.output)
@@ -125,4 +132,36 @@ func cal(obj model) model {
 	obj.start = time.Now().Unix()
 	obj.now = time.Now().Unix()
 	return obj
+}
+
+//定时检查
+func timer(obj *model, start *int64, duration int64) {
+	now := time.Now().Unix()
+	if (now - *start) > duration {
+		record(obj)
+		*start = time.Now().Unix()
+	}
+}
+
+//写入文件
+func record(obj *model) {
+	var file *os.File
+	defer file.Close()
+	obj.now = time.Now().Unix()
+	*obj = cal(*obj)
+	if file, err := os.OpenFile("/tmp/time.log", os.O_APPEND|os.O_WRONLY, 0666); err != nil {
+		panic(err)
+	} else {
+		write := bufio.NewWriter(file)
+		_, err = write.WriteString(fmt.Sprintf("%s %s\n", time.Now().String(), obj.output))
+		if err != nil {
+			fmt.Println("err msg:", err)
+			return
+		}
+		err = write.Flush()
+		if err != nil {
+			fmt.Println("err msg:", err)
+			return
+		}
+	}
 }
