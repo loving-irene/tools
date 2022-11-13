@@ -93,10 +93,10 @@ print your command:
 			case TIME_PAUSE:
 				fmt.Println("计时器已暂停")
 			default:
-				fmt.Println("暂停计时器")
+				fmt.Println("计时器暂停")
+				obj.flag = TIME_PAUSE
+				obj.now = time.Now().Unix()
 			}
-			obj.flag = TIME_PAUSE
-			obj.now = time.Now().Unix()
 			obj = cal(obj)
 		default:
 			fmt.Println("no command")
@@ -134,7 +134,6 @@ func cal(obj model) model {
 func record(obj *model) {
 	var file *os.File
 	defer file.Close()
-	obj.now = time.Now().Unix()
 	*obj = cal(*obj)
 	if file, err := os.OpenFile("/tmp/time.log", os.O_APPEND|os.O_WRONLY, 0666); err != nil {
 		panic(err)
