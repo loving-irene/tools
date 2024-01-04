@@ -1,2 +1,5 @@
 .idea
 time
+
+storage
+*.log
