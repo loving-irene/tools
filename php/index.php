@@ -22,16 +22,20 @@ spl_autoload_register('myAutoloader');
 
 define('root',__DIR__);
 
+$dotenv=\Dotenv\Dotenv::createImmutable(__DIR__);
+$env=$dotenv->safeLoad();
+
+var_dump($env);
+exit();
+
 $reader=Reader::createFromPath(__DIR__.'/storage/words.csv','r+');
 $records=$reader->getRecords();
 $writer=\League\Csv\Writer::createFromPath(__DIR__.'/storage/words_translate.csv','w+');
 
-$baidu=new \services\baidu\translate\BaiduTranslateCommonService('20200428000432904','7Tw3AOdMtCgMpIScsTaq');
 $baidu=\services\baidu\translate\BaiduTranslateFactory::createTranslate('domain');
 $data=[];
 foreach ($records as $record) {
-    //TODO 将配置拆分到env中
-    $res=$baidu->init('','')->sign($record[0])->queryParam()->translate();
+    $res=$baidu->init($env['BAIDU_TRANSLATE_KEY'],$env['BAIDU_TRANSLATE_SECRET'])->sign($record[0])->queryParam()->translate();
     $decode=json_decode($res,true);
     if (array_key_exists('error_code', $decode)) {
         //出错

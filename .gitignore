@@ -3,3 +3,5 @@ time
 
 storage
 *.log
+
+.env
